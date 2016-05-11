@@ -10,7 +10,7 @@ class Program
 
         //Change the name of person2, and person1 also changes.
         person2.setName("Molly");
-/*Необходимо изменить имя метода. Старое имя: setNewAge, новое имя: setAge*/
+/*Необходимо изменить имя метода. Старое имя: setAge, новое имя: setAge1, 							  имя класса: testValue3, пространство имен: testValue3*/
         person2.setAge(16);
 
         Console.WriteLine("person2 Name = {0} Age = {1}", person2.Name, person2.Age);

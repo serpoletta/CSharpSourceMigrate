@@ -33,37 +33,43 @@ def get_cs_files_list(path):
 
 
 class DiffAnalyzer:
+	# Модель
+	model = 		{'MethodSignatureDiff':('oldName', 'newName', 'className', 'namespace'),
+						 'MethodInitializationDiff':('methodName', 'oldArgs', 'newArgs', 'className', 'namespace'),
+						 'AccessDiff': ('name', 'type', 'accessModif', 'namespace', 'class') ,
+						 'NamespaceDiff': ('className', 'oldNamespace', 'newNamespace'),
+						 'MethodSymanticDiff': ('name', 'className', 'namespace')}
+
+	# Словарь комментариев по модели
+	comments_text = 	{'MethodSignatureDiff':
+							  'Необходимо изменить имя метода. Старое имя: %s, новое имя: %s, \
+							  имя класса: %s, пространство имен: %s',
+						 'MethodInitializationDiff':
+							 'Изменены параметры инициализации. Имя метода: \
+							 %s, старые аргументы: %s, новые аргументы: %s, имя класса: %s, пространство имен: %s',
+						 'AccessDiff':
+								'Изменена область видимости. Имя: %s, тип: %s, \
+							  	модификатор доступа: %s, пространство имен: %s, класс: %s',
+						 'NamespaceDiff':
+							'Измененено пространство имен. Имя класса: %s, старое \
+							 пространство имен: %s, новое пространство имен: %s',
+						 'MethodSymanticDiff':
+							'Изменена семантика. Имя: %s, имя класса: %s, пространство имен: %s'}
+
 	def __init__(self, diffs_path):
 		with open(diffs_path) as f_diffs:
 			parsed_diffs = json.loads(f_diffs.read())
-
-		# Адреса в модели, по которым находятся отредактированные элементы
-		self.addresses = {'signatureDiff':'oldName',
-						 'initializationDiff':'methodName',
-						 'scopeDiff':'methodName',
-						 'namespaceDiff': 'methodClass',
-						 'symanticDiff': 'methodName'}
-
-		# Словарь комментариев по модели
-		self.comments_text = {'signatureDiff':
-								  'Необходимо изменить имя метода. Старое имя: %s, новое имя: %s',
-							 'initializationDiff':'Изменены параметры инициализации. %s %s %s',
-							 'scopeDiff':'Изменена область видимости',
-							 'namespaceDiff': 'Измененена принадлежность классу',
-							 'symanticDiff': 'Изменена семантика метода %s'}
 
 		# Заполняем список измененных элементов по diff-модели
 		self.edited = []
 		self.helper = {}
 		for elem in parsed_diffs:
 			type_key = list(elem.keys())[0]
-			name_key = self.addresses.get(type_key)
+			name_key = self.model.get(type_key)[0]
 			new_edited = elem.get(type_key).get(name_key)
 			if new_edited:
 				self.edited.append(new_edited)
 				self.helper[new_edited] = elem
-		print(self.edited)
-		print(self.helper)
 
 	# Проверяет, содержится ли часть строки в diff-ах
 	def contains(self, line):
@@ -78,13 +84,15 @@ class DiffAnalyzer:
 		for substr in list(self.helper.keys()):
 			if not (line.rfind(substr)==-1):
 				# Взять данные
-				# TODO: уточнить порядок аргументов
-				data = tuple(list(self.helper[substr].values())[0].values())
-				print(data)
+				substr_data = self.helper[substr]
+				diff_type_name = list(substr_data.keys())[0]
+				args = tuple(self.model.get(diff_type_name))
+				data = []
+				for arg in args:
+					data.append(substr_data[diff_type_name][arg])
+
 				# Подставить в текст по ключу
-				diff_type = list(self.helper[substr].keys())[0]
-				text = str(self.comments_text.get(diff_type)) % data
-				print(text)
+				text = str(self.comments_text.get(diff_type_name)) % tuple(data)
 				return '/*' + text + '*/' + '\n'
 		return '/* Что-то изменилось */' + '\n'
 

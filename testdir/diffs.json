@@ -1,12 +1,18 @@
 [
-  { "signatureDiff":
-    { "oldName": "setAge",
-      "newName": "setNewAge"
+  {
+    "MethodSymanticDiff" : {
+        "name" : "testValue3",
+        "className" : "testValue3",
+        "namespace":"testValue3"
     }
   },
-  { "signatureDiff":
-    { "oldName": "EndEdit",
-      "newName": "EndEdit1"
+  {
+    "MethodSignatureDiff" : {
+        "oldName" : "setAge",
+        "newName" : "setAge1",
+    "className": "testValue3",
+    "namespace":"testValue3"
+
     }
   }
 
