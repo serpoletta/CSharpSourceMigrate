@@ -1,5 +1,6 @@
 class Program
 {
+//TODO: Новый пример
     static void Main()
     {
         Person person1 = new Person("Leopold", 6);
