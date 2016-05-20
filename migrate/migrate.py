@@ -84,7 +84,11 @@ class DiffAnalyzer:
 			new_edited = elem.get(type_key).get(name_key)
 			if new_edited:
 				self.edited.append(new_edited)
-				self.helper[new_edited] = elem
+				if not new_edited in list(self.helper.keys()):
+					self.helper[new_edited] = [elem]
+				else:
+					if not elem in self.helper[new_edited]:
+						self.helper[new_edited] = self.helper[new_edited] + [elem]
 
 	# Костыль для получаемого ненастоящего json-а
 	def to_real_json(self, json_str):
@@ -108,16 +112,17 @@ class DiffAnalyzer:
 	def comment(self, line):
 		for substr in list(self.helper.keys()):
 			if not (line.rfind(substr) == -1):
-				# Взять данные
-				substr_data = self.helper[substr]
-				diff_type_name = list(substr_data.keys())[0]
-				args = tuple(self.model.get(diff_type_name))
-				data = []
-				for arg in args:
-					data.append(substr_data[diff_type_name][arg])
+				text = ''
+				for elem in self.helper[substr]:
+					# Взять данные
+					diff_type_name = list(elem.keys())[0]
+					args = tuple(self.model.get(diff_type_name))
+					data = []
+					for arg in args:
+						data.append(elem[diff_type_name][arg])
 
-				# Подставить в текст по ключу
-				text = str(self.comments_text.get(diff_type_name)) % tuple(data)
+					# Подставить в текст по ключу
+					text += (str(self.comments_text.get(diff_type_name)) % tuple(data)) + '\n'
 				return '/*' + text + '*/' + '\n'
 		return '/* Что-то изменилось */' + '\n'
 
